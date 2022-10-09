@@ -5,9 +5,7 @@ import (
 )
 
 var (
-	// Used for flags.
-	cfgFile     string
-	userLicense string
+	diskImage string
 
 	rootCmd = &cobra.Command{
 		Use:   "apollofs",
@@ -21,11 +19,8 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-var diskImage string
-
 func init() {
 	cobra.OnInitialize()
 
-	rootCmd.AddCommand(copyInCommand)
 	rootCmd.PersistentFlags().StringVarP(&diskImage, "diskImage", "d", "", "Path to disk image (required)")
 }

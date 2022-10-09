@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/domainos-archeology/apollofs/fs"
 	"github.com/spf13/cobra"
 )
@@ -22,10 +25,12 @@ func init() {
 }
 
 var listCommand = &cobra.Command{
-	Use:   "list",
+	Use:   "list path...",
 	Short: "",
 	Long:  ``,
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return nil
+		fmt.Println("List: " + strings.Join(args, " "))
+		return List(diskImage, args)
 	},
 }

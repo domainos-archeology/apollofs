@@ -15,7 +15,9 @@ func info(diskImage string) error {
 	defer pvol.Unmount()
 
 	fmt.Println("Disk image:", diskImage)
-	pvol.Label.Info()
+	pvol.PrintLabel()
+	fmt.Println()
+	pvol.LV.PrintLabel()
 
 	return pvol.Unmount()
 }
