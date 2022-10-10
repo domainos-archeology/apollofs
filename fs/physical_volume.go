@@ -6,30 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/domainos-archeology/apollofs/util"
 )
 
 const MaxLogicalVolumes = 10
-const BlockDataSize = 1024
-const BlockSize = BlockDataSize + 32 /*sizeof(BlockHeader)*/
-
-type BlockHeader struct {
-	UID              int64
-	PageWithinObject int32
-	LastWritten      int32
-
-	BlockTypeSystemTypeEtc int32
-	Ignore1                int32
-	Ignore2                int16
-	DataChecksum           int16
-	BlockDAddr             int32
-}
-
-type Block struct {
-	Header BlockHeader
-	Data   [BlockDataSize]byte
-}
 
 type PhysicalVolume struct {
 	Label pvLabel
@@ -42,7 +21,7 @@ type pvLabel struct {
 	Version             int16
 	APOLLO              [6]byte
 	Name                [32]byte
-	UID                 uint64
+	UID                 UID
 	Ignore1             int16
 	DriveType           int16
 	TotalBlocksInVolume int32
@@ -88,13 +67,15 @@ func Mount(diskImage string) (*PhysicalVolume, error) {
 	}
 
 	pvol := &PhysicalVolume{file: file}
-	block0, err := pvol.readBlock(0)
+	block0, err := pvol.ReadBlock(0)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("pvlabel block uid: %s\n", block0.Header.ObjectUID)
+
 	// XXX validate the block header?
-	err = binary.Read(bytes.NewReader(block0.Data[:]), binary.BigEndian, &pvol.Label)
+	err = block0.ReadInto(&pvol.Label)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +104,7 @@ func (pvol *PhysicalVolume) PrintLabel() {
 	fmt.Println("PV Label:")
 	fmt.Printf("Version: %d\n", pvol.Label.Version)
 	fmt.Printf("Name: %s\n", string(pvol.Label.Name[:]))
-	fmt.Printf("UID: %s\n", util.FormatUID(pvol.Label.UID)) // need a better way to format these
+	fmt.Printf("UID: %s\n", pvol.Label.UID.String())
 	fmt.Printf("DriveType: %d\n", pvol.Label.DriveType)
 	fmt.Printf("TotalBlocksInVolume: %d\n", pvol.Label.TotalBlocksInVolume)
 	fmt.Printf("BlocksPerTrack: %d\n", pvol.Label.BlocksPerTrack)
@@ -147,7 +128,7 @@ func (pvol *PhysicalVolume) LogicalVolumes() []int {
 	return lvs
 }
 
-func (pvol *PhysicalVolume) readBlock(blockNum int32) (*Block, error) {
+func (pvol *PhysicalVolume) ReadBlock(blockNum int32) (*Block, error) {
 	_, err := pvol.file.Seek(int64(blockNum*BlockSize), io.SeekStart)
 	if err != nil {
 		return nil, err
