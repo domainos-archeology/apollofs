@@ -1,10 +1,13 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
 
 func CopyOut(diskImage string, paths []string) error {
-	// todo
-	return nil
+	return fmt.Errorf("command not implemented")
 }
 
 func init() {
@@ -13,7 +16,7 @@ func init() {
 
 var copyOutCommand = &cobra.Command{
 	Use:   "copyout",
-	Short: "",
+	Short: "Copy a file from the disk image to the host",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return nil

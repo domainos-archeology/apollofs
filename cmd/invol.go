@@ -1,10 +1,13 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
 
 func Invol(diskImage string) error {
-	// todo
-	return nil
+	return fmt.Errorf("command not implemented")
 }
 
 func init() {
@@ -13,7 +16,7 @@ func init() {
 
 var involCommand = &cobra.Command{
 	Use:   "invol",
-	Short: "",
+	Short: "Initialize a disk image",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return nil

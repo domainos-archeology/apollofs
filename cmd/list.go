@@ -63,7 +63,7 @@ func init() {
 
 var listCommand = &cobra.Command{
 	Use:   "list path...",
-	Short: "",
+	Short: "List files/directories in the disk image (similar to 'ls' in the host)",
 	Long:  ``,
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {

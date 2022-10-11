@@ -69,8 +69,8 @@ func init() {
 }
 
 var infoCommand = &cobra.Command{
-	Use:   "info",
-	Short: "",
+	Use:   "info [labels|vtoc|block]",
+	Short: "Dump information about filesystem structures",
 	Long:  "",
 }
 
