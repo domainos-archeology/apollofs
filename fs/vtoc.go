@@ -10,16 +10,22 @@ type VTOCHeader struct {
 	DiskEntryDirVTOCX   VTOCX
 	OSPagingFileVTOCX   VTOCX
 	SysbootVTOCX        VTOCX
-	VTOCMap             VTOCMap
+	VTOCMapData         VTOCMapData
 	Unused              [28]byte
+}
+type VTOCMapData [48]byte
+
+// the next two are the parsed form of VTOCMapData. check logical_volumn.go
+type VTOCMap []VTOCMapExtent
+type VTOCMapExtent struct {
+	FirstBlockDAddr int
+	NumBlocks       int
 }
 
 type VTOCBlock struct {
 	NextBlockDAddr int32
 	Entries        [5]VTOCE
 }
-
-type VTOCMap [48]byte
 
 type VTOCEHeader struct {
 	Info             int32 // "VTOC & Object Info" in the docs

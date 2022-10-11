@@ -1,15 +1,20 @@
 package fs
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/domainos-archeology/apollofs/util"
+	"github.com/icza/bitio"
 )
 
 type LogicalVolume struct {
 	pvol       *PhysicalVolume
 	startDAddr int32
 	Label      lvLabel
+
+	// there will be 8 of these
+	VTOCMap []VTOCMapExtent
 }
 
 type lvLabel struct {
@@ -37,12 +42,24 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, e
 		return nil, err
 	}
 
-	fmt.Printf("lvlabel block uid: %s\n", block.Header.ObjectUID)
-
 	// XXX validate the block header?
 	err = block.ReadInto(&lvol.Label)
 	if err != nil {
 		return nil, err
+	}
+
+	// parse out the VTOCMapData into our VTOCMap
+	r := bitio.NewReader(bytes.NewReader(lvol.Label.VTOCHeader.VTOCMapData[:]))
+	for i := 0; i < 8; i++ {
+		var extent VTOCMapExtent
+
+		extentBits, err := r.ReadBits(6)
+		if err != nil {
+			return nil, err
+		}
+		extent.NumBlocks = int(extentBits >> 4)
+		extent.FirstBlockDAddr = int(extentBits & 0xf)
+		lvol.VTOCMap = append(lvol.VTOCMap, extent)
 	}
 
 	// not yet
@@ -63,6 +80,12 @@ func (lvol *LogicalVolume) PrintLabel() {
 	fmt.Printf("Boot Time: %s\n", util.FormatTimestamp(lvol.Label.BootTime))
 	fmt.Printf("Dismounted Time: %s\n", util.FormatTimestamp(lvol.Label.DismountedTime))
 	lvol.Label.VTOCHeader.Print()
+
+	// now print out our parsed vtoc map:
+	fmt.Println("VTOC Map:")
+	for i, extent := range lvol.VTOCMap {
+		fmt.Printf("  %d: %d blocks at %d\n", i, extent.NumBlocks, extent.FirstBlockDAddr)
+	}
 }
 
 func (lvol *LogicalVolume) ReadBlock(blockNum int32) (*Block, error) {

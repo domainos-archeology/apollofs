@@ -37,11 +37,10 @@ func (h *BlockHeader) Print() {
 	fmt.Printf("BlockHeader:\n")
 	fmt.Printf("  object uid: %s\n", h.ObjectUID)
 	fmt.Printf("  Page within object: %d\n", h.PageWithinObject)
-	fmt.Printf("  Block types: %d\n", h.BlockType())
+	fmt.Printf("  Block type: %d\n", h.BlockType())
 	fmt.Printf("  System type: %d\n", h.SystemType())
-	fmt.Printf("  Ignore1: %d\n", h.Ignore1)
-	fmt.Printf("  Ignore2: %d\n", h.Ignore2)
 	fmt.Printf("  Checksum: %d\n", h.DataChecksum)
+	fmt.Printf("  Block DAddr: %d\n", h.BlockDAddr)
 }
 
 type Block struct {

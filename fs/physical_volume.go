@@ -72,8 +72,6 @@ func Mount(diskImage string) (*PhysicalVolume, error) {
 		return nil, err
 	}
 
-	fmt.Printf("pvlabel block uid: %s\n", block0.Header.ObjectUID)
-
 	// XXX validate the block header?
 	err = block0.ReadInto(&pvol.Label)
 	if err != nil {

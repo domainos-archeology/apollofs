@@ -17,7 +17,7 @@ func TestVTOCHeaderLayout(t *testing.T) {
 	require.Equal(t, 0x0c, int(unsafe.Offsetof(h.DiskEntryDirVTOCX)))
 	require.Equal(t, 0x10, int(unsafe.Offsetof(h.OSPagingFileVTOCX)))
 	require.Equal(t, 0x14, int(unsafe.Offsetof(h.SysbootVTOCX)))
-	require.Equal(t, 0x18, int(unsafe.Offsetof(h.VTOCMap)))
+	require.Equal(t, 0x18, int(unsafe.Offsetof(h.VTOCMapData)))
 	require.Equal(t, 0x48, int(unsafe.Offsetof(h.Unused)))
 }
 
