@@ -55,7 +55,7 @@ func block(diskImage string, physDAddr string) error {
 		return err
 	}
 
-	block.Header.Print()
+	block.Print()
 
 	return pvol.Unmount()
 }

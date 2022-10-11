@@ -3,6 +3,7 @@ package fs
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -50,4 +51,10 @@ type Block struct {
 
 func (b *Block) ReadInto(data any) error {
 	return binary.Read(bytes.NewReader(b.Data[:]), binary.BigEndian, data)
+}
+
+func (b *Block) Print() {
+	b.Header.Print()
+	fmt.Printf("Block data:\n")
+	fmt.Println(hex.Dump(b.Data[:]))
 }
