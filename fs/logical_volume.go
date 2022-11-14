@@ -72,8 +72,15 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, e
 }
 
 func (lvol *LogicalVolume) PrintLabel() {
+	var versionExtra string
+	if lvol.Label.Version == 0 {
+		versionExtra = "(pre-sr10)"
+	} else {
+		versionExtra = "(sr10)"
+	}
+
 	fmt.Println("LV Label:")
-	fmt.Printf("Version: %d\n", lvol.Label.Version)
+	fmt.Printf("Version: %d %s\n", lvol.Label.Version, versionExtra)
 	fmt.Printf("Name: %s\n", string(lvol.Label.Name[:]))
 	fmt.Printf("ID: %s\n", lvol.Label.ID)
 	fmt.Printf("Label Written: %s\n", util.FormatTimestamp(lvol.Label.LabelWritten))
