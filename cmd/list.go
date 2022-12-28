@@ -18,7 +18,8 @@ func List(diskImage string, paths []string) error {
 	// let's just list the root directory for now
 	lvol := pvol.LV
 
-	vtocx := lvol.Label.VTOCHeader.SysbootVTOCX
+	vtocx := lvol.Label.VTOCHeader.DiskEntryDirVTOCX
+	fmt.Printf("listing vtocx daddr = %d, index = %d\n", vtocx.BlockDAddr(), vtocx.Index())
 	block, err := lvol.ReadBlock(vtocx.BlockDAddr())
 	if err != nil {
 		return err

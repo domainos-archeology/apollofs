@@ -31,7 +31,27 @@ func vtoc(diskImage string) error {
 	defer pvol.Unmount()
 
 	fmt.Println("Disk image:", diskImage)
-	pvol.LV.PrintLabel()
+
+	vtocHeader := pvol.LV.Label.VTOCHeader
+	fmt.Println("VTOC Header:")
+	vtocHeader.Print()
+
+	fmt.Println("VTOC Map:")
+	pvol.LV.VTOCMap.Print()
+
+	fmt.Printf("DiskEntryDirVTOCX: daddr %d index %d\n", vtocHeader.DiskEntryDirVTOCX.BlockDAddr(), vtocHeader.DiskEntryDirVTOCX.Index())
+
+	block, err := pvol.ReadBlock(vtocHeader.DiskEntryDirVTOCX.BlockDAddr())
+	if err != nil {
+		return err
+	}
+	var vtocBlock fs.VTOCBlock
+	err = block.ReadInto(&vtocBlock)
+	if err != nil {
+		return err
+	}
+	vtoce := vtocBlock.Entries[vtocHeader.DiskEntryDirVTOCX.Index()]
+	vtoce.Print()
 
 	return pvol.Unmount()
 }

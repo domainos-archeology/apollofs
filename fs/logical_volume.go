@@ -11,17 +11,17 @@ import (
 type LogicalVolume struct {
 	pvol       *PhysicalVolume
 	startDAddr int32
-	Label      lvLabel
+	Label      LVLabel
 
 	// there will be 8 of these
-	VTOCMap []VTOCMapExtent
+	VTOCMap VTOCMap
 }
 
-type lvLabel struct {
+type LVLabel struct {
 	Version         int16
 	Ignore1         int16
 	Name            [32]byte
-	ID              UID
+	UID             UID
 	BATHeader       BATHeader
 	VTOCHeader      VTOCHeader
 	LabelWritten    uint32 // time LV label writtern
@@ -82,7 +82,7 @@ func (lvol *LogicalVolume) PrintLabel() {
 	fmt.Println("LV Label:")
 	fmt.Printf("Version: %d %s\n", lvol.Label.Version, versionExtra)
 	fmt.Printf("Name: %s\n", string(lvol.Label.Name[:]))
-	fmt.Printf("ID: %s\n", lvol.Label.ID)
+	fmt.Printf("UID: %s\n", lvol.Label.UID)
 	fmt.Printf("Label Written: %s\n", util.FormatTimestamp(lvol.Label.LabelWritten))
 	fmt.Printf("Boot Time: %s\n", util.FormatTimestamp(lvol.Label.BootTime))
 	fmt.Printf("Dismounted Time: %s\n", util.FormatTimestamp(lvol.Label.DismountedTime))
@@ -90,9 +90,7 @@ func (lvol *LogicalVolume) PrintLabel() {
 
 	// now print out our parsed vtoc map:
 	fmt.Println("VTOC Map:")
-	for i, extent := range lvol.VTOCMap {
-		fmt.Printf("  %d: %d blocks at %d\n", i, extent.NumBlocks, extent.FirstBlockDAddr)
-	}
+	lvol.VTOCMap.Print()
 }
 
 func (lvol *LogicalVolume) ReadBlock(blockNum int32) (*Block, error) {

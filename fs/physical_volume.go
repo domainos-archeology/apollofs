@@ -11,13 +11,13 @@ import (
 const MaxLogicalVolumes = 10
 
 type PhysicalVolume struct {
-	Label pvLabel
+	Label PVLabel
 	LV    *LogicalVolume
 
 	file *os.File
 }
 
-type pvLabel struct {
+type PVLabel struct {
 	Version             int16
 	APOLLO              [6]byte
 	Name                [32]byte
@@ -35,7 +35,7 @@ type pvLabel struct {
 	PreComp     int16
 }
 
-func (l pvLabel) validate() error {
+func (l PVLabel) validate() error {
 	if !bytes.Equal(l.APOLLO[:], []byte("APOLLO")) {
 		return fmt.Errorf("expected 'APOLLO', got '%s'", string(l.APOLLO[:]))
 	}

@@ -39,7 +39,6 @@ type VTOCEHeader struct {
 	DirectoryUID     UID   // "UID of Directory in which object catalogued" in the docs.  containing dir?
 	MoreStuff        int32 // "DTM Ext. / Unused / Ref. Count" in the docs
 	ObjectLockKey    int32
-	Pad3             [4]byte
 }
 
 type VTOCE struct {
@@ -73,4 +72,32 @@ func (h VTOCHeader) Print() {
 	fmt.Println("  DiskEntryDirVTOCX:", h.DiskEntryDirVTOCX)
 	fmt.Println("  OSPagingFileVTOCX:", h.OSPagingFileVTOCX)
 	fmt.Println("  SysbootVTOCX:", h.SysbootVTOCX)
+}
+
+func (e VTOCE) Print() {
+	fmt.Println("VTOCE:")
+	fmt.Println("  Info:", e.Header.Info)
+	fmt.Println("  ObjectUID:", e.Header.ObjectUID)
+	fmt.Println("  ObjectTypeDefUID:", e.Header.ObjectTypeDefUID)
+	fmt.Println("  ObjectACLUID:", e.Header.ObjectACLUID)
+	fmt.Println("  CurrentLength:", e.Header.CurrentLength)
+	fmt.Println("  BlocksUsed:", e.Header.BlocksUsed)
+	fmt.Println("  LastUsedTime:", e.Header.LastUsedTime)
+	fmt.Println("  LastModifiedTime:", e.Header.LastModifiedTime)
+	fmt.Println("  DirectoryUID:", e.Header.DirectoryUID)
+	fmt.Println("  MoreStuff:", e.Header.MoreStuff)
+	fmt.Println("  ObjectLockKey:", e.Header.ObjectLockKey)
+	fmt.Println("  FileMap0:")
+	for _, daddr := range e.FileMap0 {
+		fmt.Println("    ", daddr)
+	}
+	fmt.Println("  FileMap1Ptr:", e.FileMap1Ptr)
+	fmt.Println("  FileMap2Ptr:", e.FileMap2Ptr)
+	fmt.Println("  FileMap3Ptr:", e.FileMap3Ptr)
+}
+
+func (m VTOCMap) Print() {
+	for i, extent := range m {
+		fmt.Printf("  extent %d: %d blocks at %d\n", i, extent.NumBlocks, extent.FirstBlockDAddr)
+	}
 }
