@@ -60,6 +60,23 @@ func (l PVLabel) validate() error {
 	return nil
 }
 
+func (l PVLabel) Print() {
+	fmt.Printf("Version: %d\n", l.Version)
+	fmt.Printf("Name: %s\n", string(l.Name[:]))
+	fmt.Printf("UID: %s\n", l.UID.String())
+	fmt.Printf("DriveType: %d\n", l.DriveType)
+	fmt.Printf("TotalBlocksInVolume: %d\n", l.TotalBlocksInVolume)
+	fmt.Printf("BlocksPerTrack: %d\n", l.BlocksPerTrack)
+	fmt.Printf("TracksPerCylinder: %d\n", l.TracksPerCylinder)
+	fmt.Printf("SectorStart: %d\n", l.SectorStart)
+	fmt.Printf("SectorSize: %d\n", l.SectorSize)
+	fmt.Printf("PreComp: %d\n", l.PreComp)
+	fmt.Printf("Logical Volumes:\n")
+	for i := 0; i < MaxLogicalVolumes; i++ {
+		fmt.Printf("  LV%d: block %d / %d (alt)\n", i, l.LVDAddr[i], l.AltLVLabelDAddr[i])
+	}
+}
+
 func Mount(diskImage string) (*PhysicalVolume, error) {
 	file, err := os.Open(diskImage)
 	if err != nil {
@@ -100,20 +117,7 @@ func (pvol *PhysicalVolume) Unmount() error {
 
 func (pvol *PhysicalVolume) PrintLabel() {
 	fmt.Println("PV Label:")
-	fmt.Printf("Version: %d\n", pvol.Label.Version)
-	fmt.Printf("Name: %s\n", string(pvol.Label.Name[:]))
-	fmt.Printf("UID: %s\n", pvol.Label.UID.String())
-	fmt.Printf("DriveType: %d\n", pvol.Label.DriveType)
-	fmt.Printf("TotalBlocksInVolume: %d\n", pvol.Label.TotalBlocksInVolume)
-	fmt.Printf("BlocksPerTrack: %d\n", pvol.Label.BlocksPerTrack)
-	fmt.Printf("TracksPerCylinder: %d\n", pvol.Label.TracksPerCylinder)
-	fmt.Printf("SectorStart: %d\n", pvol.Label.SectorStart)
-	fmt.Printf("SectorSize: %d\n", pvol.Label.SectorSize)
-	fmt.Printf("PreComp: %d\n", pvol.Label.PreComp)
-	fmt.Printf("Logical Volumes:\n")
-	for i := 0; i < MaxLogicalVolumes; i++ {
-		fmt.Printf("  LV%d: block %d / %d (alt)\n", i, pvol.Label.LVDAddr[i], pvol.Label.AltLVLabelDAddr[i])
-	}
+	pvol.Label.Print()
 }
 
 func (pvol *PhysicalVolume) LogicalVolumes() []int {

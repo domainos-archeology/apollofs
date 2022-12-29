@@ -53,8 +53,28 @@ func (b *Block) ReadInto(data any) error {
 	return binary.Read(bytes.NewReader(b.Data[:]), binary.BigEndian, data)
 }
 
-func (b *Block) Print() {
+func (b *Block) Print(includeContents bool) {
 	b.Header.Print()
-	fmt.Printf("Block data:\n")
-	fmt.Println(hex.Dump(b.Data[:]))
+
+	if includeContents {
+		fmt.Printf("Block data:\n")
+
+		if b.Header.ObjectUID == UIDpvlabel {
+			var pvlabel PVLabel
+			err := b.ReadInto(&pvlabel)
+			if err != nil {
+				panic(err)
+			}
+			pvlabel.Print()
+		} else if b.Header.ObjectUID == UIDlvlabel {
+			var lvlabel LVLabel
+			err := b.ReadInto(&lvlabel)
+			if err != nil {
+				panic(err)
+			}
+			lvlabel.Print()
+		} else {
+			fmt.Println(hex.Dump(b.Data[:]))
+		}
+	}
 }

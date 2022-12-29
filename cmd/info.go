@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var blockContents bool
+
 func labels(diskImage string) error {
 	pvol, err := fs.Mount(diskImage)
 	if err != nil {
@@ -75,7 +77,7 @@ func block(diskImage string, physDAddr string) error {
 		return err
 	}
 
-	block.Print()
+	block.Print(blockContents)
 
 	return pvol.Unmount()
 }
@@ -86,6 +88,8 @@ func init() {
 	infoCommand.AddCommand(labelsCommand)
 	infoCommand.AddCommand(vtocCommand)
 	infoCommand.AddCommand(blockCommand)
+
+	blockCommand.Flags().BoolVarP(&blockContents, "contents", "c", false, "dump block contents")
 }
 
 var infoCommand = &cobra.Command{

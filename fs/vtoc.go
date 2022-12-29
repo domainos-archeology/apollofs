@@ -15,15 +15,15 @@ type VTOCHeader struct {
 }
 type VTOCMapData [48]byte
 
-// the next two are the parsed form of VTOCMapData. check logical_volumn.go
+// the next two are the parsed form of VTOCMapData. check logical_volume.go
 type VTOCMap []VTOCMapExtent
 type VTOCMapExtent struct {
-	FirstBlockDAddr int
-	NumBlocks       int
+	NumBlocks       int16
+	FirstBlockDAddr DAddr
 }
 
 type VTOCBlock struct {
-	NextBlockDAddr int32
+	NextBlockDAddr DAddr
 	Entries        [5]VTOCE
 }
 

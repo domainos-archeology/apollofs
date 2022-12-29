@@ -1,5 +1,24 @@
 package fs
 
-// TODO(toshok) leaving the BAT stuff for later, as I think it'll only be needed
-// when implementing copyin?
-type BATHeader [32]byte
+import "fmt"
+
+type BATHeader struct {
+	NumBlocksRepresented  int32
+	NumFreeBlocks         int32
+	FirstBATBlockDAddr    DAddr
+	BlockNumOfFirstBATBit DAddr
+	VolumeTrouble         int16
+	Unused1               int16
+	BatStep               int32
+	Unused2               [8]byte // padding to get us to 32 bytes
+}
+
+func (h BATHeader) Print() {
+	fmt.Println("BATHeader:")
+	fmt.Println("  NumBlocksRepresented:", h.NumBlocksRepresented)
+	fmt.Println("  NumFreeBlocks:", h.NumFreeBlocks)
+	fmt.Println("  FirstBATBlockDAddr:", h.FirstBATBlockDAddr)
+	fmt.Println("  BlockNumOfFirstBATBit:", h.BlockNumOfFirstBATBit)
+	fmt.Println("  VolumeTrouble:", h.VolumeTrouble)
+	fmt.Println("  BatStep:", h.BatStep)
+}

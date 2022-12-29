@@ -1,11 +1,9 @@
 package fs
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/domainos-archeology/apollofs/util"
-	"github.com/icza/bitio"
 )
 
 type LogicalVolume struct {
@@ -31,6 +29,24 @@ type LVLabel struct {
 	DismountedTime  uint32
 }
 
+func (l LVLabel) Print() {
+	var versionExtra string
+	if l.Version == 0 {
+		versionExtra = "(pre-sr10)"
+	} else {
+		versionExtra = "(sr10)"
+	}
+
+	fmt.Printf("Version: %d %s\n", l.Version, versionExtra)
+	fmt.Printf("Name: %s\n", string(l.Name[:]))
+	fmt.Printf("UID: %s\n", l.UID)
+	fmt.Printf("Label Written: %s\n", util.FormatTimestamp(l.LabelWritten))
+	fmt.Printf("Boot Time: %s\n", util.FormatTimestamp(l.BootTime))
+	fmt.Printf("Dismounted Time: %s\n", util.FormatTimestamp(l.DismountedTime))
+	l.BATHeader.Print()
+	l.VTOCHeader.Print()
+}
+
 func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, error) {
 	lvol := &LogicalVolume{
 		pvol:       pvol,
@@ -49,16 +65,21 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, e
 	}
 
 	// parse out the VTOCMapData into our VTOCMap
-	r := bitio.NewReader(bytes.NewReader(lvol.Label.VTOCHeader.VTOCMapData[:]))
+	dataIdx := 0
 	for i := 0; i < 8; i++ {
 		var extent VTOCMapExtent
 
-		extentBits, err := r.ReadBits(6)
-		if err != nil {
-			return nil, err
-		}
-		extent.NumBlocks = int(extentBits >> 4)
-		extent.FirstBlockDAddr = int(extentBits & 0xf)
+		extent.NumBlocks = int16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256 +
+			int16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])
+		dataIdx += 2
+
+		extent.FirstBlockDAddr = DAddr(
+			uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256*256*256 +
+				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])*256*256 +
+				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+2])*256 +
+				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+3]),
+		)
+		dataIdx += 4
 		lvol.VTOCMap = append(lvol.VTOCMap, extent)
 	}
 
@@ -72,22 +93,8 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, e
 }
 
 func (lvol *LogicalVolume) PrintLabel() {
-	var versionExtra string
-	if lvol.Label.Version == 0 {
-		versionExtra = "(pre-sr10)"
-	} else {
-		versionExtra = "(sr10)"
-	}
-
 	fmt.Println("LV Label:")
-	fmt.Printf("Version: %d %s\n", lvol.Label.Version, versionExtra)
-	fmt.Printf("Name: %s\n", string(lvol.Label.Name[:]))
-	fmt.Printf("UID: %s\n", lvol.Label.UID)
-	fmt.Printf("Label Written: %s\n", util.FormatTimestamp(lvol.Label.LabelWritten))
-	fmt.Printf("Boot Time: %s\n", util.FormatTimestamp(lvol.Label.BootTime))
-	fmt.Printf("Dismounted Time: %s\n", util.FormatTimestamp(lvol.Label.DismountedTime))
-	lvol.Label.VTOCHeader.Print()
-
+	lvol.Label.Print()
 	// now print out our parsed vtoc map:
 	fmt.Println("VTOC Map:")
 	lvol.VTOCMap.Print()
