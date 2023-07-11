@@ -109,7 +109,7 @@ func init() {
 
 var copyOutCommand = &cobra.Command{
 	Use:   "copyout [src] [dest]",
-	Short: "Copy a src file from the disk image to the host",
+	Short: "Copy a file from the disk image to the host",
 	Long:  "",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
