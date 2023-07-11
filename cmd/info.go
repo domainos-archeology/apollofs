@@ -9,6 +9,7 @@ import (
 )
 
 var blockContents bool
+var raw bool
 
 func labels(diskImage string) error {
 	pvol, err := fs.Mount(diskImage)
@@ -43,7 +44,7 @@ func vtoc(diskImage string) error {
 
 	fmt.Printf("DiskEntryDirVTOCX: daddr %d index %d\n", vtocHeader.DiskEntryDirVTOCX.BlockDAddr(), vtocHeader.DiskEntryDirVTOCX.Index())
 
-	block, err := pvol.ReadBlock(vtocHeader.DiskEntryDirVTOCX.BlockDAddr())
+	block, err := pvol.LV.ReadBlock(vtocHeader.DiskEntryDirVTOCX.BlockDAddr())
 	if err != nil {
 		return err
 	}
@@ -72,12 +73,12 @@ func block(diskImage string, physDAddr string) error {
 
 	fmt.Println("Disk image:", diskImage)
 
-	block, err := pvol.ReadBlock(int32(daddr))
+	block, err := pvol.ReadBlock(fs.DAddr(daddr))
 	if err != nil {
 		return err
 	}
 
-	block.Print(blockContents)
+	block.Print(blockContents, raw)
 
 	return pvol.Unmount()
 }
@@ -90,6 +91,7 @@ func init() {
 	infoCommand.AddCommand(blockCommand)
 
 	blockCommand.Flags().BoolVarP(&blockContents, "contents", "c", false, "dump block contents")
+	blockCommand.Flags().BoolVarP(&raw, "raw", "r", false, "when dumping contents, force hex (raw) dump")
 }
 
 var infoCommand = &cobra.Command{

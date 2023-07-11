@@ -9,5 +9,5 @@ import (
 
 func TestBATSizes(t *testing.T) {
 	var h BATHeader
-	require.Equal(t, uintptr(32), unsafe.Sizeof(h))
+	require.Equal(t, 32, int(unsafe.Sizeof(h)))
 }

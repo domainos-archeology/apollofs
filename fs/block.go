@@ -21,7 +21,7 @@ type BlockHeader struct {
 	Ignore1          int32
 	Ignore2          int16
 	DataChecksum     int16
-	BlockDAddr       DAddr
+	PVBlockDAddr     DAddr
 }
 
 func (bh *BlockHeader) BlockType() int {
@@ -41,7 +41,7 @@ func (h *BlockHeader) Print() {
 	fmt.Printf("  Block type: %d\n", h.BlockType())
 	fmt.Printf("  System type: %d\n", h.SystemType())
 	fmt.Printf("  Checksum: %d\n", h.DataChecksum)
-	fmt.Printf("  Block DAddr: %d\n", h.BlockDAddr)
+	fmt.Printf("  Block PV DAddr: %d\n", h.PVBlockDAddr)
 }
 
 type Block struct {
@@ -49,15 +49,27 @@ type Block struct {
 	Data   [1024]byte // must match BlockDataSize above
 }
 
+type BlockReadable interface {
+	FromReader(*bytes.Reader) error
+}
+
 func (b *Block) ReadInto(data any) error {
+	if v, ok := data.(BlockReadable); ok {
+		return v.FromReader(bytes.NewReader(b.Data[:]))
+	}
 	return binary.Read(bytes.NewReader(b.Data[:]), binary.BigEndian, data)
 }
 
-func (b *Block) Print(includeContents bool) {
+func (b *Block) Print(includeContents bool, raw bool) {
 	b.Header.Print()
 
 	if includeContents {
 		fmt.Printf("Block data:\n")
+
+		if raw {
+			fmt.Println(hex.Dump(b.Data[:]))
+			return
+		}
 
 		if b.Header.ObjectUID == UIDpvlabel {
 			var pvlabel PVLabel
@@ -73,8 +85,38 @@ func (b *Block) Print(includeContents bool) {
 				panic(err)
 			}
 			lvlabel.Print()
+		} else if b.Header.ObjectUID == UIDvtoc {
+			var vtocBlock VTOCBlock
+			err := b.ReadInto(&vtocBlock)
+			if err != nil {
+				panic(err)
+			}
+			vtocBlock.Print()
+		} else if b.Header.ObjectUID == UIDvtoc_bkt {
+			var vtocBucketBlock VTOCBucketBlock
+			err := b.ReadInto(&vtocBucketBlock)
+			if err != nil {
+				panic(err)
+			}
+			vtocBucketBlock.Print()
 		} else {
 			fmt.Println(hex.Dump(b.Data[:]))
 		}
+	}
+}
+
+func NewBlock(header BlockHeader, data any) Block {
+	var buf bytes.Buffer
+	err := binary.Write(&buf, binary.BigEndian, data)
+	if err != nil {
+		panic(err)
+	}
+
+	var blockData [1024]byte
+	copy(blockData[:], buf.Bytes())
+
+	return Block{
+		Header: header,
+		Data:   blockData,
 	}
 }

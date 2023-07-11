@@ -15,9 +15,10 @@ func init() {
 }
 
 var copyInCommand = &cobra.Command{
-	Use:   "copyin",
-	Short: "Copy a file from the host to the disk image",
-	Long:  ``,
+	Use:    "copyin",
+	Short:  "Copy a file from the host to the disk image",
+	Long:   ``,
+	PreRun: toggleDebug,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return nil
 	},

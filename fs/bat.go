@@ -7,9 +7,9 @@ type BATHeader struct {
 	NumFreeBlocks         int32
 	FirstBATBlockDAddr    DAddr
 	BlockNumOfFirstBATBit DAddr
-	VolumeTrouble         int16
+	VolumeTrouble         uint16
 	Unused1               int16
-	BatStep               int32
+	BatStep               uint32
 	Unused2               [8]byte // padding to get us to 32 bytes
 }
 
@@ -21,4 +21,18 @@ func (h BATHeader) Print() {
 	fmt.Println("  BlockNumOfFirstBATBit:", h.BlockNumOfFirstBATBit)
 	fmt.Println("  VolumeTrouble:", h.VolumeTrouble)
 	fmt.Println("  BatStep:", h.BatStep)
+}
+
+type BATManager struct {
+	lvol *LogicalVolume
+}
+
+func NewBATManager(lvol *LogicalVolume) *BATManager {
+	return &BATManager{
+		lvol: lvol,
+	}
+}
+
+func (bm *BATManager) AllocateBlock() (DAddr, error) {
+	return 0, nil
 }

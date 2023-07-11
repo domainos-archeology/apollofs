@@ -27,12 +27,18 @@ type PVLabel struct {
 	TotalBlocksInVolume int32
 	BlocksPerTrack      int16
 	TracksPerCylinder   int16
-	LVDAddr             [10]int32
-	AltLVLabelDAddr     [10]int32
+	LVDAddr             [10]DAddr
+	AltLVLabelDAddr     [10]DAddr
 
-	SectorStart int16
-	SectorSize  int16
-	PreComp     int16
+	// start of phys bad spot cylinder
+	PhysBadspotDAddr DAddr
+
+	// start of phys diag cylinder
+	PhysDiagDAddr DAddr
+
+	SectorStart     uint16
+	SectorSize      uint16
+	PreCompCylinder uint16
 }
 
 func (l PVLabel) validate() error {
@@ -61,16 +67,21 @@ func (l PVLabel) validate() error {
 }
 
 func (l PVLabel) Print() {
+	dtName := "unknown"
+	dt, err := GetDriveType(l.DriveType)
+	if err == nil {
+		dtName = dt.Name
+	}
 	fmt.Printf("Version: %d\n", l.Version)
 	fmt.Printf("Name: %s\n", string(l.Name[:]))
 	fmt.Printf("UID: %s\n", l.UID.String())
-	fmt.Printf("DriveType: %d\n", l.DriveType)
+	fmt.Printf("DriveType: %x (%s)\n", l.DriveType, dtName)
 	fmt.Printf("TotalBlocksInVolume: %d\n", l.TotalBlocksInVolume)
 	fmt.Printf("BlocksPerTrack: %d\n", l.BlocksPerTrack)
 	fmt.Printf("TracksPerCylinder: %d\n", l.TracksPerCylinder)
 	fmt.Printf("SectorStart: %d\n", l.SectorStart)
 	fmt.Printf("SectorSize: %d\n", l.SectorSize)
-	fmt.Printf("PreComp: %d\n", l.PreComp)
+	fmt.Printf("PreComp: %d\n", l.PreCompCylinder)
 	fmt.Printf("Logical Volumes:\n")
 	for i := 0; i < MaxLogicalVolumes; i++ {
 		fmt.Printf("  LV%d: block %d / %d (alt)\n", i, l.LVDAddr[i], l.AltLVLabelDAddr[i])
@@ -130,7 +141,7 @@ func (pvol *PhysicalVolume) LogicalVolumes() []int {
 	return lvs
 }
 
-func (pvol *PhysicalVolume) ReadBlock(blockNum int32) (*Block, error) {
+func (pvol *PhysicalVolume) ReadBlock(blockNum DAddr) (*Block, error) {
 	_, err := pvol.file.Seek(int64(blockNum*BlockSize), io.SeekStart)
 	if err != nil {
 		return nil, err

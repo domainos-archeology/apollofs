@@ -8,7 +8,7 @@ import (
 
 type LogicalVolume struct {
 	pvol       *PhysicalVolume
-	startDAddr int32
+	startDAddr DAddr
 	Label      LVLabel
 
 	// there will be 8 of these
@@ -47,7 +47,7 @@ func (l LVLabel) Print() {
 	l.VTOCHeader.Print()
 }
 
-func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, error) {
+func NewLogicalVolume(pvol *PhysicalVolume, startDAddr DAddr) (*LogicalVolume, error) {
 	lvol := &LogicalVolume{
 		pvol:       pvol,
 		startDAddr: startDAddr,
@@ -65,12 +65,22 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr int32) (*LogicalVolume, e
 	}
 
 	// parse out the VTOCMapData into our VTOCMap
+	var numExtents int
+	switch {
+	case lvol.Label.Version == 0:
+		numExtents = 8
+	case lvol.Label.Version == 1:
+		numExtents = 10
+	default:
+		panic("unknown LV label version")
+	}
+
 	dataIdx := 0
-	for i := 0; i < 8; i++ {
+	for i := 0; i < numExtents; i++ {
 		var extent VTOCMapExtent
 
-		extent.NumBlocks = int16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256 +
-			int16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])
+		extent.NumBlocks = uint16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256 +
+			uint16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])
 		dataIdx += 2
 
 		extent.FirstBlockDAddr = DAddr(
@@ -100,6 +110,6 @@ func (lvol *LogicalVolume) PrintLabel() {
 	lvol.VTOCMap.Print()
 }
 
-func (lvol *LogicalVolume) ReadBlock(blockNum int32) (*Block, error) {
+func (lvol *LogicalVolume) ReadBlock(blockNum DAddr) (*Block, error) {
 	return lvol.pvol.ReadBlock(lvol.startDAddr + blockNum)
 }
