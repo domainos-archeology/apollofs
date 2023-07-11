@@ -1,6 +1,10 @@
 package fs
 
-import "fmt"
+import (
+	"fmt"
+
+	"golang.org/x/exp/slices"
+)
 
 func notImplemented() {
 	panic("not implemented")
@@ -40,7 +44,7 @@ type VTOCBlock struct {
 
 // this seem to be a struct in SR10 only, and not present in SR9?
 type VTOCBucketBlock struct {
-	Buckets [3]VTOCBucket
+	Buckets [4]VTOCBucket
 }
 
 type VTOCBucket struct {
@@ -111,7 +115,7 @@ type VTOCEHeader struct {
 	U27              uint32
 	U28              uint32
 	ObjectACLUID     UID
-	Padding          [64]byte
+	Padding          [52]byte
 }
 
 type VTOCESR9 struct {
@@ -124,10 +128,10 @@ type VTOCESR9 struct {
 
 type VTOCE struct {
 	Header      VTOCEHeader
-	FileMap0    [29]DAddr // daddrs for the first 32 pages of an object
 	FileMap1Ptr DAddr
 	FileMap2Ptr DAddr
 	FileMap3Ptr DAddr
+	FileMap0    [32]DAddr // daddrs for the first 32 pages of an object
 }
 
 type VTOCX uint32
@@ -332,6 +336,81 @@ func (vm *VTOCManager) GetIndexForUID(uid UID) (VTOCX, error) {
 	}
 
 	return 0, errNotFound
+}
+
+func (vm VTOCManager) GetFMBlocks(e *VTOCE) ([]DAddr, error) {
+	var blocks []DAddr
+
+	for _, daddr := range e.FileMap0 {
+		if daddr == 0 {
+			break
+		}
+		blocks = append(blocks, daddr)
+	}
+
+	if e.FileMap1Ptr != 0 {
+		fm1Blocks, err := vm.getFMBlocks(1, e.FileMap1Ptr)
+		if err != nil {
+			return nil, err
+		}
+		blocks = append(blocks, fm1Blocks...)
+	}
+	if e.FileMap2Ptr != 0 {
+		fm2Blocks, err := vm.getFMBlocks(2, e.FileMap2Ptr)
+		if err != nil {
+			return nil, err
+		}
+		blocks = append(blocks, fm2Blocks...)
+	}
+	if e.FileMap3Ptr != 0 {
+		fm3Blocks, err := vm.getFMBlocks(3, e.FileMap3Ptr)
+		if err != nil {
+			return nil, err
+		}
+		blocks = append(blocks, fm3Blocks...)
+	}
+	return blocks, nil
+}
+
+func (vm VTOCManager) getFMBlocks(level int, blockDAddr DAddr) ([]DAddr, error) {
+	if level == 0 || level > 3 {
+		panic("out of range file map level")
+	}
+
+	block, err := vm.lvol.ReadBlock(blockDAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	var daddrs [256]DAddr
+	err = block.ReadInto(&daddrs)
+	if err != nil {
+		return nil, err
+	}
+
+	blocks := daddrs[:]
+	// truncate at the first 0 daddr
+	zeroIdx := slices.Index(blocks, DAddr(0))
+	if zeroIdx != -1 {
+		blocks = blocks[:zeroIdx]
+	}
+
+	if level == 1 {
+		// these daddrs are actual file blocks.  no further recursion
+		return blocks, nil
+	}
+
+	// otherwise we get our list of daddrs and recurse here
+	var rvBlocks []DAddr
+	for _, daddr := range blocks {
+		fmBlocks, err := vm.getFMBlocks(level-1, daddr)
+		if err != nil {
+			return nil, err
+		}
+		rvBlocks = append(rvBlocks, fmBlocks...)
+	}
+
+	return rvBlocks, nil
 }
 
 func (vm *VTOCManager) hashUID(uid UID) uint32 {
