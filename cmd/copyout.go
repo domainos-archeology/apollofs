@@ -40,14 +40,12 @@ func CopyOut(diskImage string, args []string) error {
 		return errNotAFile
 	}
 
-	vtoce.Print()
-
 	fileBlockDAddrs, err := vm.GetFMBlocks(vtoce)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(fileBlockDAddrs)
+	fmt.Printf("Copying %d blocks (%d bytes) from %s to %s...\n", len(fileBlockDAddrs), vtoce.Header.CurrentLength, src, dest)
 
 	destFile, err := os.Create(dest)
 	if err != nil {
@@ -99,6 +97,8 @@ func CopyOut(diskImage string, args []string) error {
 			break
 		}
 	}
+
+	fmt.Println("done.")
 
 	return nil
 }
