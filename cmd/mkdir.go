@@ -2,11 +2,34 @@ package cmd
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/spf13/cobra"
+
+	"github.com/domainos-archeology/apollofs/fs"
 )
 
-func Mkdir(diskImage string, path string) error {
+func Mkdir(diskImage string, p string) error {
+	pvol, err := fs.Mount(diskImage)
+	if err != nil {
+		return err
+	}
+	defer pvol.Unmount()
+
+	lvol := pvol.LV
+
+	vm := fs.NewVTOCManager(lvol)
+	nm := fs.NewNamingManager(lvol, vm)
+
+	dir, subdir := path.Split(p)
+	dir = path.Clean(dir)
+
+	dirUid, err := nm.Resolve(dir)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("not implemented: should create directory", subdir, "contained in uid", dirUid)
 	return nil
 }
 
@@ -20,7 +43,6 @@ var mkdirCommand = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Mkdir:", args[0])
 		return Mkdir(diskImage, args[0])
 	},
 }
