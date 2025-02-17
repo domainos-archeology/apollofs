@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/domainos-archeology/apollofs/uid"
 )
 
 const MaxLogicalVolumes = 10
@@ -21,7 +23,7 @@ type PVLabel struct {
 	Version             int16
 	APOLLO              [6]byte
 	Name                [32]byte
-	UID                 UID
+	UID                 uid.UID
 	Ignore1             int16
 	DriveType           int16
 	TotalBlocksInVolume int32

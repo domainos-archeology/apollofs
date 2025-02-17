@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+
+	"github.com/domainos-archeology/apollofs/uid"
 )
 
 const BlockDataSize = 1024
@@ -13,7 +15,7 @@ const BlockSize = BlockDataSize + BlockHeaderSize
 
 type DAddr uint32
 type BlockHeader struct {
-	ObjectUID        UID
+	ObjectUID        uid.UID
 	PageWithinObject int32
 	LastWritten      int32
 
@@ -71,28 +73,28 @@ func (b *Block) Print(includeContents bool, raw bool) {
 			return
 		}
 
-		if b.Header.ObjectUID == UIDpvlabel {
+		if b.Header.ObjectUID == uid.UIDpvlabel {
 			var pvlabel PVLabel
 			err := b.ReadInto(&pvlabel)
 			if err != nil {
 				panic(err)
 			}
 			pvlabel.Print()
-		} else if b.Header.ObjectUID == UIDlvlabel {
+		} else if b.Header.ObjectUID == uid.UIDlvlabel {
 			var lvlabel LVLabel
 			err := b.ReadInto(&lvlabel)
 			if err != nil {
 				panic(err)
 			}
 			lvlabel.Print()
-		} else if b.Header.ObjectUID == UIDvtoc {
+		} else if b.Header.ObjectUID == uid.UIDvtoc {
 			var vtocBlock VTOCBlock
 			err := b.ReadInto(&vtocBlock)
 			if err != nil {
 				panic(err)
 			}
 			vtocBlock.Print()
-		} else if b.Header.ObjectUID == UIDvtoc_bkt {
+		} else if b.Header.ObjectUID == uid.UIDvtoc_bkt {
 			var vtocBucketBlock VTOCBucketBlock
 			err := b.ReadInto(&vtocBucketBlock)
 			if err != nil {

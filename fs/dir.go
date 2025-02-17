@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+
+	"github.com/domainos-archeology/apollofs/uid"
 )
 
 type DirSR9 struct {
@@ -15,7 +17,7 @@ type DirSR9 struct {
 	EntriesPerBlock uint16
 	HighBlock       uint16
 	FreeChain       uint16
-	ParentUID       UID
+	ParentUID       uid.UID
 	EntryCount      uint16
 	MaxCount        uint16
 	Linear          [18]DirEntry
@@ -31,8 +33,8 @@ type DirInformationBlock struct {
 	HeaderLength uint16
 	MBZ2         uint16
 
-	DefaultDirectoryACL UID
-	DefaultFileACL      UID
+	DefaultDirectoryACL uid.UID
+	DefaultFileACL      uid.UID
 
 	// rest is unused
 	Padding [24]byte
@@ -48,17 +50,17 @@ type DirEntrySR9 struct {
 	Rest              [8]byte
 }
 
-func (de DirEntrySR9) UID() (UID, error) {
+func (de DirEntrySR9) UID() (uid.UID, error) {
 	if de.EntryType != 2 {
-		return UID{}, fmt.Errorf("not an entry with a UID")
+		return uid.UID{}, fmt.Errorf("not an entry with a UID")
 	}
 
-	var uid UID
-	err := binary.Read(bytes.NewReader(de.Rest[:]), binary.BigEndian, &uid)
+	var u uid.UID
+	err := binary.Read(bytes.NewReader(de.Rest[:]), binary.BigEndian, &u)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
-	return uid, nil
+	return u, nil
 }
 
 // XXX there will be a LinkInfo() here for the link case
@@ -122,8 +124,8 @@ type DirEntry struct {
 	// unknown2   uint32
 	Name string
 
-	UID      UID    // entry type == 0x*2
-	LinkText string // entry type == 0x*4
+	UID      uid.UID // entry type == 0x*2
+	LinkText string  // entry type == 0x*4
 }
 
 func (de *DirEntry) HasUID() bool {
@@ -211,13 +213,13 @@ func readUint32(r *bytes.Reader) (uint32, error) {
 	return v, nil
 }
 
-func readUID(r *bytes.Reader) (UID, error) {
-	var uid UID
-	err := binary.Read(r, binary.BigEndian, &uid)
+func readUID(r *bytes.Reader) (uid.UID, error) {
+	var u uid.UID
+	err := binary.Read(r, binary.BigEndian, &u)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
-	return uid, nil
+	return u, nil
 }
 
 func readStringLen(r *bytes.Reader, length int) (string, error) {

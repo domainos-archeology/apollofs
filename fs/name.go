@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/domainos-archeology/apollofs/uid"
 	"github.com/domainos-archeology/apollofs/util"
 )
 
@@ -27,26 +28,26 @@ func NewNamingManager(lvol *LogicalVolume, vtoc *VTOCManager) *NamingManager {
 	}
 }
 
-func (nm *NamingManager) getDiskEntryDirUID() (UID, error) {
+func (nm *NamingManager) getDiskEntryDirUID() (uid.UID, error) {
 	// fmt.Println("getting disk entry dir uid", nm.lvol.Label.VTOCHeader.DiskEntryDirVTOCX)
 	entryDirVTOCE, err := nm.vtoc.GetEntry(nm.lvol.Label.VTOCHeader.DiskEntryDirVTOCX)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
 
 	return entryDirVTOCE.Header.ObjectUID, nil
 }
 
-func (nm *NamingManager) GetDirEntryUID(dirUID UID, name string) (UID, error) {
+func (nm *NamingManager) GetDirEntryUID(dirUID uid.UID, name string) (uid.UID, error) {
 	// fmt.Println("looking up", name, "in", dirUID)
 
 	dirVTOCE, err := nm.vtoc.GetEntryForUID(dirUID)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
 
 	if !dirVTOCE.IsDirectory() {
-		return UID{}, errors.New("not a directory")
+		return uid.UID{}, errors.New("not a directory")
 	}
 
 	// read the Dir from the first block (will there be more?  I don't think so?)
@@ -54,13 +55,13 @@ func (nm *NamingManager) GetDirEntryUID(dirUID UID, name string) (UID, error) {
 
 	block, err := nm.lvol.ReadBlock(dirDAddr)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
 
 	var dir Dir
 	err = block.ReadInto(&dir)
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
 
 	// check the linear list first
@@ -70,20 +71,20 @@ func (nm *NamingManager) GetDirEntryUID(dirUID UID, name string) (UID, error) {
 		}
 	}
 
-	return UID{}, errNotFound
+	return uid.UID{}, errNotFound
 }
 
-func (nm *NamingManager) Resolve(p string) (UID, error) {
+func (nm *NamingManager) Resolve(p string) (uid.UID, error) {
 	logrus.WithField("path", p).Debug("NamingManager.Resolve")
 	if !path.IsAbs(p) {
-		return UID{}, fmt.Errorf("path must be absolute")
+		return uid.UID{}, fmt.Errorf("path must be absolute")
 	}
 
 	parts := util.SplitPath(p)
 	// loop over parts, looking up the directory for each part. The first lookup is relative to '/'
 	curUID, err := nm.getDiskEntryDirUID()
 	if err != nil {
-		return UID{}, err
+		return uid.UID{}, err
 	}
 
 	for i := 0; i < len(parts); i++ {
@@ -91,7 +92,7 @@ func (nm *NamingManager) Resolve(p string) (UID, error) {
 
 		nextUID, err := nm.GetDirEntryUID(curUID, parts[i])
 		if err != nil {
-			return UID{}, err
+			return uid.UID{}, err
 		}
 		curUID = nextUID
 	}

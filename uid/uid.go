@@ -1,6 +1,7 @@
-package fs
+package uid
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -92,4 +93,26 @@ func (u UID) String() string {
 		trailer = " (sysboot_$uid)"
 	}
 	return fmt.Sprintf("%04x.%04x%s", u.Lo, u.Hi, trailer)
+}
+
+// creationTime is 36 bit, nodeID is 20 bit
+func Generate(creationTime uint64, nodeID uint32) (UID, error) {
+	// check for bit sizes
+	if creationTime > 0xfffffffff {
+		return UID{}, errors.New("creationTime too large")
+	}
+	if nodeID > 0xfffff {
+		return UID{}, errors.New("nodeID too large")
+	}
+
+	// UID layout:
+	// [36-bit creationTime | 8-bit reserved | 20-bit nodeID]
+	// Shift creationTime left by 28 (8+20) to put it in the top 36 bits.
+	// The reserved 8 bits are left as 0.
+	// The nodeID goes in the lower 20 bits.
+	uid := (creationTime << 28) | (uint64(nodeID) & 0xfffff)
+	return UID{
+		Hi: uint32(uid >> 32),
+		Lo: uint32(uid),
+	}, nil
 }

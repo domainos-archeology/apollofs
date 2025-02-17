@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/domainos-archeology/apollofs/fs"
+	"github.com/domainos-archeology/apollofs/uid"
 	"github.com/domainos-archeology/apollofs/util"
 )
 
@@ -35,14 +36,14 @@ func writeBlockAt(file *os.File, block fs.Block, blockDAddr fs.DAddr) error {
 func createPVLabelBlock(diskType fs.DriveType, lvdaddr, altlvdaddr fs.DAddr) fs.Block {
 	return fs.NewBlock(
 		fs.BlockHeader{
-			ObjectUID: fs.UIDpvlabel,
+			ObjectUID: uid.UIDpvlabel,
 		},
 		fs.PVLabel{
 			Version:             1,
 			APOLLO:              [6]byte{'A', 'P', 'O', 'L', 'L', 'O'},
 			Name:                [32]byte{'A', 'P', 'O', 'L', 'L', 'O', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-			UID:                 fs.UID{Hi: 0x776175af, Lo: 0x10012345}, // copied from my mame image
-			DriveType:           1,                                      // is this DTYPE from EH87?
+			UID:                 uid.UID{Hi: 0x776175af, Lo: 0x10012345}, // copied from my mame image
+			DriveType:           1,                                       // is this DTYPE from EH87?
 			TotalBlocksInVolume: diskType.TotalBlocks(),
 			BlocksPerTrack:      diskType.BlocksPerTrack,
 			TracksPerCylinder:   diskType.Heads,
@@ -60,14 +61,14 @@ func createPVLabelBlock(diskType fs.DriveType, lvdaddr, altlvdaddr fs.DAddr) fs.
 func createLVLabelBlock(daddr fs.DAddr) fs.Block {
 	return fs.NewBlock(
 		fs.BlockHeader{
-			ObjectUID:        fs.UIDlvlabel,
+			ObjectUID:        uid.UIDlvlabel,
 			PageWithinObject: int32(daddr) - 1,
 			PVBlockDAddr:     daddr,
 		},
 		fs.LVLabel{
 			Version:        1, // 1 == >= SR10
 			Name:           [32]byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-			UID:            fs.UID{Hi: 0x776175d5, Lo: 0x20012345}, // copied from my mame image
+			UID:            uid.UID{Hi: 0x776175d5, Lo: 0x20012345}, // copied from my mame image
 			LabelWritten:   util.TimestampToApolloEpoch(time.Now()),
 			BootTime:       util.TimestampToApolloEpoch(time.Now()),
 			DismountedTime: util.TimestampToApolloEpoch(time.Now()),
@@ -86,7 +87,7 @@ func copySysboot(file *os.File, sysbootPath string) error {
 	for i := 0; i < 10; i++ {
 		var block fs.Block
 		block.Header = fs.BlockHeader{
-			ObjectUID:        fs.UID{Hi: 0x776175d5, Lo: 0x30012345},
+			ObjectUID:        uid.UID{Hi: 0x776175d5, Lo: 0x30012345},
 			PageWithinObject: int32(i),
 			PVBlockDAddr:     fs.DAddr(2 + i),
 		}

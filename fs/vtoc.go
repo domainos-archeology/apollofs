@@ -1,8 +1,10 @@
 package fs
 
 import (
+	"encoding/binary"
 	"fmt"
 
+	"github.com/domainos-archeology/apollofs/uid"
 	"golang.org/x/exp/slices"
 )
 
@@ -23,6 +25,14 @@ type VTOCHeader struct {
 }
 type VTOCMapDataSR9 [48]byte
 type VTOCMapData [60]byte
+
+func (v VTOCMapData) Uint16At(index int) uint16 {
+	return binary.BigEndian.Uint16(v[index : index+2])
+}
+
+func (v VTOCMapData) Uint32At(index int) uint32 {
+	return binary.BigEndian.Uint32(v[index : index+4])
+}
 
 // the next two are the parsed form of VTOCMapData. check logical_volume.go
 type VTOCMap []VTOCMapExtent
@@ -58,7 +68,7 @@ type VTOCBucket struct {
 }
 
 type VTOCBucketEntry struct {
-	UID   UID
+	UID   uid.UID
 	VTOCX VTOCX
 }
 
@@ -68,15 +78,15 @@ type VTOCEHeaderSR9 struct {
 	SystemType uint8
 	Flags      uint16
 
-	ObjectUID        UID
-	ObjectTypeDefUID UID
-	ObjectACLUID     UID
+	ObjectUID        uid.UID
+	ObjectTypeDefUID uid.UID
+	ObjectACLUID     uid.UID
 	CurrentLength    int32
 	BlocksUsed       int32
 	LastUsedTime     int32
 	LastModifiedTime int32
-	DirectoryUID     UID   // "UID of Directory in which object catalogued" in the docs.  containing dir?
-	MoreStuff        int32 // "DTM Ext. / Unused / Ref. Count" in the docs
+	DirectoryUID     uid.UID // "UID of Directory in which object catalogued" in the docs.  containing dir?
+	MoreStuff        int32   // "DTM Ext. / Unused / Ref. Count" in the docs
 	ObjectLockKey    int32
 
 	Padding [4]byte // Aegis Internals doesn't have this, but EH'87 does.
@@ -86,8 +96,8 @@ type VTOCEHeader struct {
 	Version          uint8
 	SystemType       uint8
 	Flags            uint16
-	ObjectUID        UID
-	ObjectTypeDefUID UID
+	ObjectUID        uid.UID
+	ObjectTypeDefUID uid.UID
 	CurrentLength    uint32
 	BlocksUsed       uint32
 	LastModifiedTime uint32
@@ -99,11 +109,11 @@ type VTOCEHeader struct {
 	U7               uint32
 	U8               uint32
 	U9               uint32
-	DirectoryUID     UID
+	DirectoryUID     uid.UID
 	ObjectLockKey    uint32
-	ObjectUserUID    UID
-	ObjectGroupUID   UID
-	ObjectOrgUID     UID
+	ObjectUserUID    uid.UID
+	ObjectGroupUID   uid.UID
+	ObjectOrgUID     uid.UID
 	U19              uint32
 	U20              uint32
 	U21              uint32
@@ -114,7 +124,7 @@ type VTOCEHeader struct {
 	U26              uint32
 	U27              uint32
 	U28              uint32
-	ObjectACLUID     UID
+	ObjectACLUID     uid.UID
 	Padding          [52]byte
 }
 
@@ -191,8 +201,8 @@ func (b VTOCBlock) Print() {
 }
 
 func (e VTOCE) IsDirectory() bool {
-	return e.Header.ObjectTypeDefUID == UIDdirectory ||
-		e.Header.ObjectTypeDefUID == UIDunix_directory ||
+	return e.Header.ObjectTypeDefUID == uid.UIDdirectory ||
+		e.Header.ObjectTypeDefUID == uid.UIDunix_directory ||
 		e.Header.SystemType == 2 ||
 		e.Header.SystemType == 1
 }
@@ -237,7 +247,7 @@ func NewVTOCManager(lvol *LogicalVolume) *VTOCManager {
 	}
 }
 
-func (vm *VTOCManager) AllocateEntry(uid UID) (VTOCX, error) {
+func (vm *VTOCManager) AllocateEntry(u uid.UID) (VTOCX, error) {
 	// hash the uid, locate the appropriate vtoc block, checking for a free vtoce there.
 
 	// if there isn't a free vtoce, call BATManager.AllocateBlock to create a new vtoc extension block and add it to the chain.
@@ -248,7 +258,7 @@ func (vm *VTOCManager) AllocateEntry(uid UID) (VTOCX, error) {
 	return 0, nil
 }
 
-func (vm *VTOCManager) LookupEntry(uid UID) (*VTOCE, error) {
+func (vm *VTOCManager) LookupEntry(u uid.UID) (*VTOCE, error) {
 	notImplemented()
 	return nil, nil
 }
@@ -274,8 +284,8 @@ func (vm *VTOCManager) GetEntry(vtocx VTOCX) (*VTOCE, error) {
 	return &vtocBlock.Entries[vtoceIndex], nil
 }
 
-func (vm *VTOCManager) GetEntryForUID(uid UID) (*VTOCE, error) {
-	vtocx, err := vm.GetIndexForUID(uid)
+func (vm *VTOCManager) GetEntryForUID(u uid.UID) (*VTOCE, error) {
+	vtocx, err := vm.GetIndexForUID(u)
 	if err != nil {
 		return nil, err
 	}
@@ -284,11 +294,11 @@ func (vm *VTOCManager) GetEntryForUID(uid UID) (*VTOCE, error) {
 	return vm.GetEntry(vtocx)
 }
 
-func (vm *VTOCManager) GetIndexForUID(uid UID) (VTOCX, error) {
+func (vm *VTOCManager) GetIndexForUID(u uid.UID) (VTOCX, error) {
 	// fmt.Println(1)
 	// hash the uid, locate the appropriate vtoc block, then follow the chain
 	// until we find the block+index
-	hashValue := vm.hashUID(uid)
+	hashValue := vm.hashUID(u)
 
 	startingBlockNumber := hashValue >> 2
 	idx := hashValue & 0x3
@@ -323,7 +333,7 @@ func (vm *VTOCManager) GetIndexForUID(uid UID) (VTOCX, error) {
 		// fmt.Println(4)
 		// check the entries in bucket `idx`
 		for _, entry := range vtocBucketBlock.Buckets[idx].Entries {
-			if entry.UID == uid {
+			if entry.UID == u {
 				// fmt.Println(4.1)
 				return entry.VTOCX, nil
 			}
@@ -413,7 +423,7 @@ func (vm VTOCManager) getFMBlocks(level int, blockDAddr DAddr) ([]DAddr, error) 
 	return rvBlocks, nil
 }
 
-func (vm *VTOCManager) hashUID(uid UID) uint32 {
+func (vm *VTOCManager) hashUID(uid uid.UID) uint32 {
 	vtocVersion := vm.lvol.Label.VTOCHeader.Version
 	vtocSize := uint32(vm.lvol.Label.VTOCHeader.VTOCSizeInBlocks)
 

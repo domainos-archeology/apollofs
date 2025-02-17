@@ -3,6 +3,7 @@ package fs
 import (
 	"fmt"
 
+	"github.com/domainos-archeology/apollofs/uid"
 	"github.com/domainos-archeology/apollofs/util"
 )
 
@@ -19,7 +20,7 @@ type LVLabel struct {
 	Version         int16
 	Ignore1         int16
 	Name            [32]byte
-	UID             UID
+	UID             uid.UID
 	BATHeader       BATHeader
 	VTOCHeader      VTOCHeader
 	LabelWritten    uint32 // time LV label writtern
@@ -79,17 +80,12 @@ func NewLogicalVolume(pvol *PhysicalVolume, startDAddr DAddr) (*LogicalVolume, e
 	for i := 0; i < numExtents; i++ {
 		var extent VTOCMapExtent
 
-		extent.NumBlocks = uint16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256 +
-			uint16(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])
+		extent.NumBlocks = lvol.Label.VTOCHeader.VTOCMapData.Uint16At(dataIdx)
 		dataIdx += 2
 
-		extent.FirstBlockDAddr = DAddr(
-			uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx])*256*256*256 +
-				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+1])*256*256 +
-				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+2])*256 +
-				uint32(lvol.Label.VTOCHeader.VTOCMapData[dataIdx+3]),
-		)
+		extent.FirstBlockDAddr = DAddr(lvol.Label.VTOCHeader.VTOCMapData.Uint32At(dataIdx))
 		dataIdx += 4
+
 		lvol.VTOCMap = append(lvol.VTOCMap, extent)
 	}
 
