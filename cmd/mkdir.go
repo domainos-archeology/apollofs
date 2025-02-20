@@ -19,7 +19,8 @@ func Mkdir(diskImage string, p string) error {
 	lvol := pvol.LV
 
 	vm := fs.NewVTOCManager(lvol)
-	nm := fs.NewNamingManager(lvol, vm)
+	file := fs.NewFileManager(lvol, vm)
+	nm := fs.NewNamingManager(lvol, file, vm)
 
 	dir, subdir := path.Split(p)
 	dir = path.Clean(dir)

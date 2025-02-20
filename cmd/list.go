@@ -18,7 +18,8 @@ func List(diskImage string, paths []string) error {
 	lvol := pvol.LV
 
 	vm := fs.NewVTOCManager(lvol)
-	nm := fs.NewNamingManager(lvol, vm)
+	file := fs.NewFileManager(lvol, vm)
+	nm := fs.NewNamingManager(lvol, file, vm)
 
 	for _, path := range paths {
 		uid, err := nm.Resolve(path)

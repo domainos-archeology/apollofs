@@ -24,7 +24,8 @@ func CopyOut(diskImage string, args []string) error {
 	lvol := pvol.LV
 
 	vm := fs.NewVTOCManager(lvol)
-	nm := fs.NewNamingManager(lvol, vm)
+	file := fs.NewFileManager(lvol, vm)
+	nm := fs.NewNamingManager(lvol, file, vm)
 
 	uid, err := nm.Resolve(src)
 	if err != nil {

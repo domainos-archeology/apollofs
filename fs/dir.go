@@ -52,13 +52,13 @@ type DirEntrySR9 struct {
 
 func (de DirEntrySR9) UID() (uid.UID, error) {
 	if de.EntryType != 2 {
-		return uid.UID{}, fmt.Errorf("not an entry with a UID")
+		return uid.Empty, fmt.Errorf("not an entry with a UID")
 	}
 
 	var u uid.UID
 	err := binary.Read(bytes.NewReader(de.Rest[:]), binary.BigEndian, &u)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 	return u, nil
 }
@@ -217,7 +217,7 @@ func readUID(r *bytes.Reader) (uid.UID, error) {
 	var u uid.UID
 	err := binary.Read(r, binary.BigEndian, &u)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 	return u, nil
 }

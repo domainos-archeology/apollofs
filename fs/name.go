@@ -18,13 +18,19 @@ var errNotFound = errors.New("not found")
 
 type NamingManager struct {
 	lvol *LogicalVolume
+	file *FileManager
 	vtoc *VTOCManager
 }
 
-func NewNamingManager(lvol *LogicalVolume, vtoc *VTOCManager) *NamingManager {
+func NewNamingManager(
+	lvol *LogicalVolume,
+	file *FileManager,
+	vtoc *VTOCManager,
+) *NamingManager {
 	return &NamingManager{
-		lvol: lvol,
-		vtoc: vtoc,
+		lvol,
+		file,
+		vtoc,
 	}
 }
 
@@ -32,7 +38,7 @@ func (nm *NamingManager) getDiskEntryDirUID() (uid.UID, error) {
 	// fmt.Println("getting disk entry dir uid", nm.lvol.Label.VTOCHeader.DiskEntryDirVTOCX)
 	entryDirVTOCE, err := nm.vtoc.GetEntry(nm.lvol.Label.VTOCHeader.DiskEntryDirVTOCX)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 
 	return entryDirVTOCE.Header.ObjectUID, nil
@@ -43,11 +49,11 @@ func (nm *NamingManager) GetDirEntryUID(dirUID uid.UID, name string) (uid.UID, e
 
 	dirVTOCE, err := nm.vtoc.GetEntryForUID(dirUID)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 
 	if !dirVTOCE.IsDirectory() {
-		return uid.UID{}, errors.New("not a directory")
+		return uid.Empty, errors.New("not a directory")
 	}
 
 	// read the Dir from the first block (will there be more?  I don't think so?)
@@ -55,13 +61,13 @@ func (nm *NamingManager) GetDirEntryUID(dirUID uid.UID, name string) (uid.UID, e
 
 	block, err := nm.lvol.ReadBlock(dirDAddr)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 
 	var dir Dir
 	err = block.ReadInto(&dir)
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 
 	// check the linear list first
@@ -71,20 +77,20 @@ func (nm *NamingManager) GetDirEntryUID(dirUID uid.UID, name string) (uid.UID, e
 		}
 	}
 
-	return uid.UID{}, errNotFound
+	return uid.Empty, errNotFound
 }
 
 func (nm *NamingManager) Resolve(p string) (uid.UID, error) {
 	logrus.WithField("path", p).Debug("NamingManager.Resolve")
 	if !path.IsAbs(p) {
-		return uid.UID{}, fmt.Errorf("path must be absolute")
+		return uid.Empty, fmt.Errorf("path must be absolute")
 	}
 
 	parts := util.SplitPath(p)
 	// loop over parts, looking up the directory for each part. The first lookup is relative to '/'
 	curUID, err := nm.getDiskEntryDirUID()
 	if err != nil {
-		return uid.UID{}, err
+		return uid.Empty, err
 	}
 
 	for i := 0; i < len(parts); i++ {
@@ -92,7 +98,7 @@ func (nm *NamingManager) Resolve(p string) (uid.UID, error) {
 
 		nextUID, err := nm.GetDirEntryUID(curUID, parts[i])
 		if err != nil {
-			return uid.UID{}, err
+			return uid.Empty, err
 		}
 		curUID = nextUID
 	}
@@ -100,20 +106,24 @@ func (nm *NamingManager) Resolve(p string) (uid.UID, error) {
 	return curUID, nil
 }
 
-func (nm *NamingManager) CreateFile(p string) (*File, error) {
+func (nm *NamingManager) CreateFile(p string) (uid.UID, error) {
 	if !path.IsAbs(p) {
-		return nil, fmt.Errorf("file path must be absolute")
+		return uid.Empty, fmt.Errorf("file path must be absolute")
 	}
 
 	dir, _ /*lastPath*/ := path.Split(p)
-	_ /*dirUID*/, err := nm.Resolve(dir)
+	dirUID, err := nm.Resolve(dir)
 	if err != nil {
-		return nil, err
+		return uid.Empty, err
 	}
 
 	// create a file named lastPath catalogued in dirUID
+	u, err := nm.file.CreateFile(dirUID)
+	if err != nil {
+		return uid.Empty, err
+	}
 
-	return nil, nil
+	return u, nil
 }
 
 func (nm *NamingManager) CreateDirectory(p string) (*Dir, error) {

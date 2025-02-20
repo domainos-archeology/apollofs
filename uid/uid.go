@@ -12,6 +12,8 @@ type UID struct {
 
 // some canned UIDs from the docs that we recognize further down in String()
 var (
+	Empty = UID{0, 0}
+
 	UIDpvlabel  = UID{0x0200, 0x0000}
 	UIDlvlabel  = UID{0x0201, 0x0000}
 	UIDvtoc     = UID{0x0202, 0x0000}

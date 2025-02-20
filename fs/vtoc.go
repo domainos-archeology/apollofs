@@ -243,12 +243,16 @@ type VTOCManager struct {
 
 func NewVTOCManager(lvol *LogicalVolume) *VTOCManager {
 	return &VTOCManager{
-		lvol: lvol,
+		lvol,
 	}
 }
 
-func (vm *VTOCManager) AllocateEntry(u uid.UID) (VTOCX, error) {
+func (vm *VTOCManager) AllocateEntry(header VTOCEHeader) (VTOCX, error) {
 	// hash the uid, locate the appropriate vtoc block, checking for a free vtoce there.
+	// hashValue := vm.hashUID(header.ObjectUID)
+
+	// startingBlockNumber := hashValue >> 2
+	// idx := hashValue & 0x3
 
 	// if there isn't a free vtoce, call BATManager.AllocateBlock to create a new vtoc extension block and add it to the chain.
 

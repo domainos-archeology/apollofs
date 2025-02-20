@@ -22,7 +22,8 @@ func CopyIn(diskImage string, args []string) error {
 	lvol := pvol.LV
 
 	vm := fs.NewVTOCManager(lvol)
-	nm := fs.NewNamingManager(lvol, vm)
+	file := fs.NewFileManager(lvol, vm)
+	nm := fs.NewNamingManager(lvol, file, vm)
 
 	_, err = nm.CreateFile(dest) // TODO(toshok) do we need to pass a uid here?
 	if err != nil {
