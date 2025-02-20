@@ -1,4 +1,4 @@
-package fs
+package managers
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/domainos-archeology/apollofs/fs"
 	"github.com/domainos-archeology/apollofs/uid"
 	"github.com/domainos-archeology/apollofs/util"
 )
@@ -17,13 +18,13 @@ import (
 var errNotFound = errors.New("not found")
 
 type NamingManager struct {
-	lvol *LogicalVolume
+	lvol *fs.LogicalVolume
 	file *FileManager
 	vtoc *VTOCManager
 }
 
 func NewNamingManager(
-	lvol *LogicalVolume,
+	lvol *fs.LogicalVolume,
 	file *FileManager,
 	vtoc *VTOCManager,
 ) *NamingManager {
@@ -64,7 +65,7 @@ func (nm *NamingManager) GetDirEntryUID(dirUID uid.UID, name string) (uid.UID, e
 		return uid.Empty, err
 	}
 
-	var dir Dir
+	var dir fs.Dir
 	err = block.ReadInto(&dir)
 	if err != nil {
 		return uid.Empty, err
@@ -126,7 +127,7 @@ func (nm *NamingManager) CreateFile(p string) (uid.UID, error) {
 	return u, nil
 }
 
-func (nm *NamingManager) CreateDirectory(p string) (*Dir, error) {
+func (nm *NamingManager) CreateDirectory(p string) (*fs.Dir, error) {
 	if !path.IsAbs(p) {
 		return nil, fmt.Errorf("directory path must be absolute")
 	}

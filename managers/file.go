@@ -1,6 +1,7 @@
-package fs
+package managers
 
 import (
+	"github.com/domainos-archeology/apollofs/fs"
 	"github.com/domainos-archeology/apollofs/uid"
 )
 
@@ -8,11 +9,11 @@ type FileManager struct {
 	// Aegis Internals talks about the file manager using the containing
 	// directory UID to locate the volume to create the file, but we've only got
 	// one volume.
-	lvol *LogicalVolume
+	lvol *fs.LogicalVolume
 	vm   *VTOCManager
 }
 
-func NewFileManager(lvol *LogicalVolume, vm *VTOCManager) *FileManager {
+func NewFileManager(lvol *fs.LogicalVolume, vm *VTOCManager) *FileManager {
 	return &FileManager{
 		lvol,
 		vm,
@@ -37,7 +38,7 @@ func (fm *FileManager) CreateFile(containingDirectory uid.UID) (uid.UID, error) 
 
 	// 3. Fills the VTOCE header for the new file with default object attributes
 	//    and calls the VTOC manager to allocate a VTOCE.
-	vtoceHeader := VTOCEHeader{
+	vtoceHeader := fs.VTOCEHeader{
 		ObjectUID: u,
 		// TODO(toshok) fill in the rest
 	}

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/domainos-archeology/apollofs/fs"
+	"github.com/domainos-archeology/apollofs/managers"
 	"github.com/spf13/cobra"
 )
 
@@ -23,9 +24,9 @@ func CopyOut(diskImage string, args []string) error {
 
 	lvol := pvol.LV
 
-	vm := fs.NewVTOCManager(lvol)
-	file := fs.NewFileManager(lvol, vm)
-	nm := fs.NewNamingManager(lvol, file, vm)
+	vm := managers.NewVTOCManager(lvol)
+	file := managers.NewFileManager(lvol, vm)
+	nm := managers.NewNamingManager(lvol, file, vm)
 
 	uid, err := nm.Resolve(src)
 	if err != nil {

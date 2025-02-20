@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/domainos-archeology/apollofs/fs"
+	"github.com/domainos-archeology/apollofs/managers"
 )
 
 func Mkdir(diskImage string, p string) error {
@@ -18,9 +19,9 @@ func Mkdir(diskImage string, p string) error {
 
 	lvol := pvol.LV
 
-	vm := fs.NewVTOCManager(lvol)
-	file := fs.NewFileManager(lvol, vm)
-	nm := fs.NewNamingManager(lvol, file, vm)
+	vm := managers.NewVTOCManager(lvol)
+	file := managers.NewFileManager(lvol, vm)
+	nm := managers.NewNamingManager(lvol, file, vm)
 
 	dir, subdir := path.Split(p)
 	dir = path.Clean(dir)
