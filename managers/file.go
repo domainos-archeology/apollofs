@@ -31,7 +31,10 @@ func (fm *FileManager) CreateFile(containingDirectory uid.UID) (uid.UID, error) 
 
 	// 2. Calls the UID generation routine (uid_$gen) to create a UID for the
 	//    object.
-	u, err := uid.Generate(0 /*XXX fm.lvol.LastUsedTime*/, uint32(fm.lvol.Label.LastMountedNode))
+	u, err := uid.Generate(
+		0, /*XXX fm.lvol.LastUsedTime*/
+		uint32(fm.lvol.Label.LastMountedNode),
+	)
 	if err != nil {
 		return uid.Empty, err
 	}
@@ -40,7 +43,7 @@ func (fm *FileManager) CreateFile(containingDirectory uid.UID) (uid.UID, error) 
 	//    and calls the VTOC manager to allocate a VTOCE.
 	vtoceHeader := fs.VTOCEHeader{
 		ObjectUID: u,
-		// TODO(toshok) fill in the rest
+		// TODO(toshok) fill in the rest?
 	}
 
 	// 4. The VTOCE manager (vtoc_$allocate) takes the hashed U1D, locates the
