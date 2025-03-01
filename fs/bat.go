@@ -22,17 +22,3 @@ func (h BATHeader) Print() {
 	fmt.Println("  VolumeTrouble:", h.VolumeTrouble)
 	fmt.Println("  BatStep:", h.BatStep)
 }
-
-type BATManager struct {
-	lvol *LogicalVolume
-}
-
-func NewBATManager(lvol *LogicalVolume) *BATManager {
-	return &BATManager{
-		lvol: lvol,
-	}
-}
-
-func (bm *BATManager) AllocateBlock() (DAddr, error) {
-	return 0, nil
-}
