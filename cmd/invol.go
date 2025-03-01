@@ -18,8 +18,9 @@ import (
 )
 
 var (
-	sysbootPath string
-	dtype       string
+	sysbootPath    string
+	dtype          string
+	listDriveTypes bool
 )
 
 func writeBlockAt(file *os.File, block fs.Block, blockDAddr fs.DAddr) error {
@@ -107,7 +108,6 @@ func copySysboot(file *os.File, sysbootPath string) error {
 
 func invol(diskImage string) error {
 	// create a new disk image at that path
-
 	dtypeInt, err := strconv.ParseInt(dtype, 16, 64)
 	if err != nil {
 		return errors.New("driveType must be a hex string.  use --list-dtypes to see the list")
@@ -159,6 +159,7 @@ func init() {
 
 	involCommand.Flags().StringVarP(&sysbootPath, "cpboot", "b", "", "Path to sysboot file to copy to disk image")
 	involCommand.Flags().StringVarP(&dtype, "driveType", "s", "", "string ID of drive type (e.g. '105' for PRIAM 7050).")
+	involCommand.Flags().BoolVarP(&listDriveTypes, "list-dtypes", "l", false, "List available drive types")
 }
 
 var involCommand = &cobra.Command{
@@ -166,6 +167,12 @@ var involCommand = &cobra.Command{
 	Short: "Initialize a disk image",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if listDriveTypes {
+			for _, dt := range drives.GetDriveTypes() {
+				fmt.Printf("0x%03X: %s\n", dt.DType, dt.Name)
+			}
+			return nil
+		}
 		return invol(diskImage)
 	},
 }

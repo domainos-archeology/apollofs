@@ -26,20 +26,20 @@ var driveTypeList = []DriveType{
 	{0x202, "NEC D2246", 687, 6, 18},
 
 	// Winchester Dtype Class 300 -- 5 1/4" ST412 Interface
-	0x301: {0x301, "Micropolis 50MB", 830, 6, 8},
-	0x302: {0x302, "Micropolis 86MB", 1024, 8, 8},
-	0x303: {0x303, "Fujitsu 86MB", 754, 11, 8},
-	0x304: {0x304, "Maxtor 140MB", 918, 15, 8},
-	0x305: {0x305, "Maxtor 190MB", 1224, 15, 8},
-	0x306: {0x306, "Vertex 86MB", 1166, 7, 8},
+	{0x301, "Micropolis 50MB", 830, 6, 8},
+	{0x302, "Micropolis 86MB", 1024, 8, 8},
+	{0x303, "Fujitsu 86MB", 754, 11, 8},
+	{0x304, "Maxtor 140MB", 918, 15, 8},
+	{0x305, "Maxtor 190MB", 1224, 15, 8},
+	{0x306, "Vertex 86MB", 1166, 7, 8},
 
 	// Winchester Dtype Class 400 -- 5 1/4" ST412 Interface
-	0x401: {0x401, "Vertex 50MB", 987, 5, 9},
-	0x402: {0x402, "Vertex 86MB", 1166, 7, 9},
-	0x405: {0x405, "Micropolis 50MB", 1024, 5, 9},
-	0x406: {0x406, "Micropolis 86MB", 1024, 8, 9},
-	0x410: {0x410, "Micropolis 50MB", 830, 6, 9},
-	0x411: {0x411, "Maxtor 190MB", 1224, 15, 9},
+	{0x401, "Vertex 50MB", 987, 5, 9},
+	{0x402, "Vertex 86MB", 1166, 7, 9},
+	{0x405, "Micropolis 50MB", 1024, 5, 9},
+	{0x406, "Micropolis 86MB", 1024, 8, 9},
+	{0x410, "Micropolis 50MB", 830, 6, 9},
+	{0x411, "Maxtor 190MB", 1224, 15, 9},
 
 	// Winchester Dtype Class 500 -- 5 1/4" ESDI Interface
 	{0x503, "Priam/Maxtor 170MB", 1224, 7, 18},
