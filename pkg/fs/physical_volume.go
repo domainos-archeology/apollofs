@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/domainos-archeology/apollofs/pkg/drives"
 	"github.com/domainos-archeology/apollofs/pkg/uid"
 )
 
@@ -70,7 +71,7 @@ func (l PVLabel) validate() error {
 
 func (l PVLabel) Print() {
 	dtName := "unknown"
-	dt, err := GetDriveType(l.DriveType)
+	dt, err := drives.GetDriveType(l.DriveType)
 	if err == nil {
 		dtName = dt.Name
 	}

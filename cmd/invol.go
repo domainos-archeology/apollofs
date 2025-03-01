@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/domainos-archeology/apollofs/pkg/drives"
 	"github.com/domainos-archeology/apollofs/pkg/fs"
 	"github.com/domainos-archeology/apollofs/pkg/uid"
 	"github.com/domainos-archeology/apollofs/pkg/util"
@@ -33,7 +34,7 @@ func writeBlockAt(file *os.File, block fs.Block, blockDAddr fs.DAddr) error {
 	return nil
 }
 
-func createPVLabelBlock(diskType fs.DriveType, lvdaddr, altlvdaddr fs.DAddr) fs.Block {
+func createPVLabelBlock(diskType drives.DriveType, lvdaddr, altlvdaddr fs.DAddr) fs.Block {
 	return fs.NewBlock(
 		fs.BlockHeader{
 			ObjectUID: uid.UIDpvlabel,
@@ -112,7 +113,7 @@ func invol(diskImage string) error {
 		return errors.New("driveType must be a hex string.  use --list-dtypes to see the list")
 	}
 
-	diskType, err := fs.GetDriveType(int16(dtypeInt))
+	diskType, err := drives.GetDriveType(int16(dtypeInt))
 	if err != nil {
 		return fmt.Errorf("unknown driveType '%s'.  use --list-dtypes to see the list", dtype)
 	}
