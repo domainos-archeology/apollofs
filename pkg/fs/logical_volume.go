@@ -3,8 +3,8 @@ package fs
 import (
 	"fmt"
 
-	"github.com/domainos-archeology/apollofs/uid"
-	"github.com/domainos-archeology/apollofs/util"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
+	"github.com/domainos-archeology/apollofs/pkg/util"
 )
 
 type LogicalVolume struct {

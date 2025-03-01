@@ -1,6 +1,6 @@
 package managers
 
-import "github.com/domainos-archeology/apollofs/fs"
+import "github.com/domainos-archeology/apollofs/pkg/fs"
 
 type BATManager struct {
 	lvol *fs.LogicalVolume

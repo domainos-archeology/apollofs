@@ -5,8 +5,8 @@ import (
 	"math"
 	"os"
 
-	"github.com/domainos-archeology/apollofs/fs"
-	"github.com/domainos-archeology/apollofs/managers"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
+	"github.com/domainos-archeology/apollofs/pkg/managers"
 	"github.com/spf13/cobra"
 )
 

@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/domainos-archeology/apollofs/uid"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
 )
 
 const MaxLogicalVolumes = 10

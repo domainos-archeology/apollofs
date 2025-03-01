@@ -1,8 +1,8 @@
 package managers
 
 import (
-	"github.com/domainos-archeology/apollofs/fs"
-	"github.com/domainos-archeology/apollofs/uid"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
 )
 
 type FileManager struct {

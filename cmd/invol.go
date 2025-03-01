@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/domainos-archeology/apollofs/fs"
-	"github.com/domainos-archeology/apollofs/uid"
-	"github.com/domainos-archeology/apollofs/util"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
+	"github.com/domainos-archeology/apollofs/pkg/util"
 )
 
 var (

@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/domainos-archeology/apollofs/fs"
-	"github.com/domainos-archeology/apollofs/managers"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
+	"github.com/domainos-archeology/apollofs/pkg/managers"
 )
 
 func Mkdir(diskImage string, p string) error {

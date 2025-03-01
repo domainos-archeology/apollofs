@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/domainos-archeology/apollofs/uid"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
 )
 
 type DirSR9 struct {

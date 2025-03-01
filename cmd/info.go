@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/domainos-archeology/apollofs/fs"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
 	"github.com/spf13/cobra"
 )
 

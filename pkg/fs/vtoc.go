@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/domainos-archeology/apollofs/uid"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
 )
 
 type VTOCHeader struct {

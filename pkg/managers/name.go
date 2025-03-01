@@ -7,9 +7,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/domainos-archeology/apollofs/fs"
-	"github.com/domainos-archeology/apollofs/uid"
-	"github.com/domainos-archeology/apollofs/util"
+	"github.com/domainos-archeology/apollofs/pkg/fs"
+	"github.com/domainos-archeology/apollofs/pkg/uid"
+	"github.com/domainos-archeology/apollofs/pkg/util"
 )
 
 // if we ever make this a persistent thing, we can add a cache, but for now we
